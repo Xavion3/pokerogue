@@ -27,7 +27,7 @@ import { TempBattleStat } from "../data/temp-battle-stat";
 import { ArenaTagSide, WeakenMoveScreenTag, WeakenMoveTypeTag } from "../data/arena-tag";
 import { ArenaTagType } from "../data/enums/arena-tag-type";
 import { Biome } from "../data/enums/biome";
-import { Ability, AbAttr, BattleStatMultiplierAbAttr, BlockCritAbAttr, BonusCritAbAttr, BypassBurnDamageReductionAbAttr, FieldPriorityMoveImmunityAbAttr, FieldVariableMovePowerAbAttr, IgnoreOpponentStatChangesAbAttr, MoveImmunityAbAttr, MoveTypeChangeAttr, PreApplyBattlerTagAbAttr, PreDefendFullHpEndureAbAttr, ReceivedMoveDamageMultiplierAbAttr, ReduceStatusEffectDurationAbAttr, StabBoostAbAttr, StatusEffectImmunityAbAttr, TypeImmunityAbAttr, VariableMovePowerAbAttr, VariableMoveTypeAbAttr, WeightMultiplierAbAttr, allAbilities, applyAbAttrs, applyBattleStatMultiplierAbAttrs, applyPreApplyBattlerTagAbAttrs, applyPreAttackAbAttrs, applyPreDefendAbAttrs, applyPreSetStatusAbAttrs, UnsuppressableAbilityAbAttr, SuppressFieldAbilitiesAbAttr, NoFusionAbilityAbAttr, MultCritAbAttr, IgnoreTypeImmunityAbAttr, DamageBoostAbAttr, IgnoreTypeStatusEffectImmunityAbAttr, ConditionalCritAbAttr } from "../data/ability";
+import { Ability, AbAttr, BattleStatMultiplierAbAttr, BlockCritAbAttr, BonusCritAbAttr, BypassBurnDamageReductionAbAttr, FieldPriorityMoveImmunityAbAttr, FieldVariableMovePowerAbAttr, IgnoreOpponentStatChangesAbAttr, MoveImmunityAbAttr, MoveTypeChangeAttr, PreApplyBattlerTagAbAttr, PreDefendFullHpEndureAbAttr, ReceivedMoveDamageMultiplierAbAttr, ReduceStatusEffectDurationAbAttr, StabBoostAbAttr, StatusEffectImmunityAbAttr, TypeImmunityAbAttr, VariableMovePowerAbAttr, VariableMoveTypeAbAttr, WeightMultiplierAbAttr, allAbilities, applyAbAttrs, applyBattleStatMultiplierAbAttrs, applyPreApplyBattlerTagAbAttrs, applyPreAttackAbAttrs, applyPreDefendAbAttrs, applyPreSetStatusAbAttrs, UnsuppressableAbilityAbAttr, SuppressFieldAbilitiesAbAttr, NoFusionAbilityAbAttr, MultCritAbAttr, IgnoreTypeImmunityAbAttr, DamageBoostAbAttr, IgnoreTypeStatusEffectImmunityAbAttr, ConditionalCritAbAttr, applyFieldBattleStatMultiplierAbAttrs, FieldBattleStatMultiplierAbAttr } from "../data/ability";
 import { Abilities } from "#app/data/enums/abilities";
 import PokemonData from "../system/pokemon-data";
 import { BattlerIndex } from "../battle";
@@ -645,6 +645,13 @@ export default abstract class Pokemon extends Phaser.GameObjects.Container {
     }
     const statValue = new Utils.NumberHolder(this.getStat(stat));
     applyBattleStatMultiplierAbAttrs(BattleStatMultiplierAbAttr, this, battleStat, statValue);
+
+    const multiplier = new Utils.NumberHolder(1);
+    this.scene.getField(true).forEach(p => {
+      applyFieldBattleStatMultiplierAbAttrs(FieldBattleStatMultiplierAbAttr, p, battleStat, multiplier, this);
+    });
+    statValue.value *= multiplier.value;
+
     let ret = statValue.value * (Math.max(2, 2 + statLevel.value) / Math.max(2, 2 - statLevel.value));
     switch (stat) {
     case Stat.ATK:
@@ -1030,6 +1037,26 @@ export default abstract class Pokemon extends Phaser.GameObjects.Container {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Gets a list of all instances of a given ability attribute among abilities this pokemon has.
+   * Accounts for all the various effects which can affect whether an ability will be present or
+   * in effect, and both passive and non-passive.
+   * @param {AbAttr} attrType The ability attribute to check for.
+   * @param {boolean} canApply If false, it doesn't check whether the ability is currently active
+   * @param {boolean} ignoreOverride If true, it ignores ability changing effects
+   * @returns {AbAttr[]} A list of all the ability attributes on this ability.
+   */
+  getAbilityAttrs(attrType: { new(...args: any[]): AbAttr }, canApply: boolean = true, ignoreOverride?: boolean): AbAttr[] {
+    const abilityAttrs: AbAttr[] = [];
+    if (!canApply || this.canApplyAbility()) {
+      abilityAttrs.push(...this.getAbility(ignoreOverride).getAttrs(attrType));
+    }
+    if (!canApply || this.canApplyAbility(true)) {
+      abilityAttrs.push(...this.getPassiveAbility().getAttrs(attrType));
+    }
+    return abilityAttrs;
   }
 
   getWeight(): number {

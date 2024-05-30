@@ -1172,6 +1172,46 @@ export class BattleStatMultiplierAbAttr extends AbAttr {
   }
 }
 
+/**
+ * Gives a multiplier for a battle stat if a pokemon lacks this ability.
+ * To prevent stacking, this sets the multiplier to the multiplier if lower for multipliers < 1 and higher if > 1.
+ * @see {@link applyFieldBattleStatMultiplierAbAttrs}
+ * @see {@link applyFieldBattleStat}
+ */
+export class FieldBattleStatMultiplierAbAttr extends AbAttr {
+  private battleStat: BattleStat;
+  private multiplier: number;
+
+  /**
+   * @param {BattleStat} battleStat Which stat to modify.
+   * @param {number} multiplier What the multiplier should be.
+   */
+  constructor(battleStat: BattleStat, multiplier: number) {
+    super(false);
+
+    this.battleStat = battleStat;
+    this.multiplier = multiplier;
+  }
+
+  /**
+   * @param pokemon The pokemon using the ability
+   * @param passive N/A
+   * @param battleStat Which stat is being checked
+   * @param multiplierValue The current multiplier value
+   * @param checkedPokemon The pokemon that would have its stats multiplied
+   * @param args N/A
+   * @returns {boolean} Whether the ability was successfully applied
+   */
+  applyFieldBattleStat(pokemon: Pokemon, passive: boolean, battleStat: BattleStat, multiplierValue: Utils.NumberHolder, checkedPokemon: Pokemon, args: any[]): boolean {
+    if (battleStat === this.battleStat && checkedPokemon.getAbilityAttrs(FieldBattleStatMultiplierAbAttr).every(a => (a as FieldBattleStatMultiplierAbAttr).battleStat !== battleStat)) {
+      multiplierValue.value = this.multiplier < 0 ? Math.min(this.multiplier, multiplierValue.value) : Math.max(this.multiplier, multiplierValue.value);
+      return true;
+    }
+
+    return false;
+  }
+}
+
 export class PostAttackAbAttr extends AbAttr {
   applyPostAttack(pokemon: Pokemon, passive: boolean, defender: Pokemon, move: PokemonMove, hitResult: HitResult, args: any[]): boolean | Promise<boolean> {
     return false;
@@ -3272,6 +3312,20 @@ export function applyBattleStatMultiplierAbAttrs(attrType: { new(...args: any[])
   return applyAbAttrsInternal<BattleStatMultiplierAbAttr>(attrType, pokemon, (attr, passive) => attr.applyBattleStat(pokemon, passive, battleStat, statValue, args), args);
 }
 
+/**
+ * Applies a field stat multiplier attribute.
+ * @param attrType Should always be FieldBattleStatMultiplierAbAttr at this time.
+ * @param pokemon The pokemon with the ability
+ * @param battleStat The stat to apply for
+ * @param multplierValue A holder for the current multiplier
+ * @param checkedPokemon The pokemon that this is being applied to
+ * @param args N/A
+ */
+export function applyFieldBattleStatMultiplierAbAttrs(attrType: { new(...args: any[]): FieldBattleStatMultiplierAbAttr },
+  pokemon: Pokemon, battleStat: BattleStat, multplierValue: Utils.NumberHolder, checkedPokemon: Pokemon, ...args: any[]): Promise<void> {
+  return applyAbAttrsInternal<FieldBattleStatMultiplierAbAttr>(attrType, pokemon, (attr, passive) => attr.applyFieldBattleStat(pokemon, passive, battleStat, multplierValue, ceckedPokemon, args), args);
+}
+
 export function applyPreAttackAbAttrs(attrType: { new(...args: any[]): PreAttackAbAttr },
   pokemon: Pokemon, defender: Pokemon, move: PokemonMove, ...args: any[]): Promise<void> {
   return applyAbAttrsInternal<PreAttackAbAttr>(attrType, pokemon, (attr, passive) => attr.applyPreAttack(pokemon, passive, defender, move, args), args);
@@ -4282,17 +4336,17 @@ export function initAbilities() {
       .ignorable()
       .partial(),
     new Ability(Abilities.VESSEL_OF_RUIN, 9)
-      .ignorable()
-      .unimplemented(),
+      .attr(FieldBattleStatMultiplierAbAttr, BattleStat.SPATK, 0.75)
+      .ignorable(),
     new Ability(Abilities.SWORD_OF_RUIN, 9)
-      .ignorable()
-      .unimplemented(),
+      .attr(FieldBattleStatMultiplierAbAttr, BattleStat.DEF, 0.75)
+      .ignorable(),
     new Ability(Abilities.TABLETS_OF_RUIN, 9)
-      .ignorable()
-      .unimplemented(),
+      .attr(FieldBattleStatMultiplierAbAttr, BattleStat.ATK, 0.75)
+      .ignorable(),
     new Ability(Abilities.BEADS_OF_RUIN, 9)
-      .ignorable()
-      .unimplemented(),
+      .attr(FieldBattleStatMultiplierAbAttr, BattleStat.SPDEF, 0.75)
+      .ignorable(),
     new Ability(Abilities.ORICHALCUM_PULSE, 9)
       .attr(PostSummonWeatherChangeAbAttr, WeatherType.SUNNY)
       .attr(PostBiomeChangeWeatherChangeAbAttr, WeatherType.SUNNY)

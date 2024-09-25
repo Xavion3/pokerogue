@@ -2328,6 +2328,16 @@ export class MysteryEncounterPostSummonTag extends BattlerTag {
 }
 
 /**
+ * Tag that adds the item negating effects of embargo.
+ * See {@linkcode MagicRoomTag} for more information on exactly which effects are negated.
+ */
+export class EmbargoTag extends BattlerTag {
+  constructor() {
+    super(BattlerTagType.EMBARGO, BattlerTagLapseType.TURN_END, 5);
+  }
+}
+
+/**
  * Retrieves a {@linkcode BattlerTag} based on the provided tag type, turn count, source move, and source ID.
  *
  * @param {BattlerTagType} tagType the type of the {@linkcode BattlerTagType}.
@@ -2490,6 +2500,8 @@ export function getBattlerTag(tagType: BattlerTagType, turnCount: number, source
     return new SubstituteTag(sourceMove, sourceId);
   case BattlerTagType.MYSTERY_ENCOUNTER_POST_SUMMON:
     return new MysteryEncounterPostSummonTag();
+  case BattlerTagType.EMBARGO:
+    return new EmbargoTag();
   case BattlerTagType.NONE:
   default:
     return new BattlerTag(tagType, BattlerTagLapseType.CUSTOM, turnCount, sourceMove, sourceId);

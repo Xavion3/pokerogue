@@ -825,6 +825,39 @@ export class TrickRoomTag extends ArenaTag {
 }
 
 /**
+ * Arena Tag class for {@link https://bulbapedia.bulbagarden.net/wiki/Magic_Room_(move) Magic Room}.
+ * Negates most items for all Pokémon on the field as long as this arena tag is up.
+ * The current list of modifiers negated by Magic Room in pokerogue is:
+ *  white herbs, berries, reviver seeds, type boosters, scope lens, leek, eviolite, golden punch,
+ *  grip claw, wide lens, multi lens, healing charm, focus band, quick claw, kings rock, leftovers,
+ *  shell bell, toxic orb, flame orb, baton, berry pouch, and mini black hole.
+ * Magic Room also negates Natural Gift and Fling, and causes Techno Blast, Judgement, and Multiattack
+ * to always be normal typed.
+ */
+export class MagicRoomTag extends ArenaTag {
+  constructor(turnCount: integer, sourceId: integer) {
+    super(ArenaTagType.MAGIC_ROOM, turnCount, Moves.MAGIC_ROOM, sourceId);
+  }
+
+  apply(arena: Arena, args: any[]): boolean {
+    const itemsNegated = args[0] as Utils.BooleanHolder;
+    itemsNegated.value = true;
+    return true;
+  }
+
+  onAdd(arena: Arena): void {
+    const source = this.sourceId ? arena.scene.getPokemonById(this.sourceId) : null;
+    if (source) {
+      arena.scene.queueMessage(i18next.t("arenaTag:magicRoomOnAdd", { pokemonNameWithAffix: getPokemonNameWithAffix(source) }));
+    }
+  }
+
+  onRemove(arena: Arena): void {
+    arena.scene.queueMessage(i18next.t("arenaTag:magicRoomOnRemove"));
+  }
+}
+
+/**
  * Arena Tag class for {@link https://bulbapedia.bulbagarden.net/wiki/Gravity_(move) Gravity}.
  * Grounds all Pokémon on the field, including Flying-types and those with
  * {@linkcode Abilities.LEVITATE} for the duration of the arena tag, usually 5 turns.
@@ -967,6 +1000,8 @@ export function getArenaTag(tagType: ArenaTagType, turnCount: integer, sourceMov
     return new HappyHourTag(turnCount, sourceId, side);
   case ArenaTagType.SAFEGUARD:
     return new SafeguardTag(turnCount, sourceId, side);
+  case ArenaTagType.MAGIC_ROOM:
+    return new MagicRoomTag(turnCount, sourceId);
   default:
     return null;
   }

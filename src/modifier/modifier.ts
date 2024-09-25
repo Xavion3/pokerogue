@@ -601,6 +601,7 @@ export class TerastallizeAccessModifier extends PersistentModifier {
 export abstract class PokemonHeldItemModifier extends PersistentModifier {
   public pokemonId: integer;
   public isTransferable: boolean = true;
+  public isNegatable: boolean = false; // Should this be prevented by magic room
 
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, stackCount);
@@ -619,7 +620,7 @@ export abstract class PokemonHeldItemModifier extends PersistentModifier {
   }
 
   shouldApply(args: any[]): boolean {
-    return super.shouldApply(args) && args.length !== 0 && args[0] instanceof Pokemon && (this.pokemonId === -1 || (args[0] as Pokemon).id === this.pokemonId);
+    return super.shouldApply(args) && args.length !== 0 && args[0] instanceof Pokemon && (this.pokemonId === -1 || (args[0] as Pokemon).id === this.pokemonId) && (!this.isNegatable || !(args[0] as Pokemon).isItemNegated());
   }
 
   isIconVisible(scene: BattleScene): boolean {
@@ -1103,6 +1104,8 @@ export class StatBoosterModifier extends PokemonHeldItemModifier {
  * @see {@linkcode apply}
  */
 export class EvolutionStatBoosterModifier extends StatBoosterModifier {
+  public isNegatable: boolean = true;
+
   clone() {
     return super.clone() as EvolutionStatBoosterModifier;
   }
@@ -1160,6 +1163,8 @@ export class EvolutionStatBoosterModifier extends StatBoosterModifier {
  * @see {@linkcode apply}
  */
 export class SpeciesStatBoosterModifier extends StatBoosterModifier {
+  public isNegatable: boolean = true;
+
   /** The species that the held item's stat boost(s) apply to */
   private species: Species[];
 
@@ -1218,6 +1223,8 @@ export class SpeciesStatBoosterModifier extends StatBoosterModifier {
  * @see {@linkcode apply}
  */
 export class CritBoosterModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   /** The amount of stages by which the held item increases the current critical-hit stage value */
   protected stageIncrement: number;
 
@@ -1268,6 +1275,8 @@ export class CritBoosterModifier extends PokemonHeldItemModifier {
  * @see {@linkcode shouldApply}
  */
 export class SpeciesCritBoosterModifier extends CritBoosterModifier {
+  public isNegatable: boolean = true;
+
   /** The species that the held item's critical-hit stage boost applies to */
   private species: Species[];
 
@@ -1307,6 +1316,8 @@ export class SpeciesCritBoosterModifier extends CritBoosterModifier {
  * Applies Specific Type item boosts (e.g., Magnet)
  */
 export class AttackTypeBoosterModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   public moveType: Type;
   private boostMultiplier: number;
 
@@ -1364,6 +1375,8 @@ export class AttackTypeBoosterModifier extends PokemonHeldItemModifier {
 }
 
 export class SurviveDamageModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -1400,6 +1413,8 @@ export class SurviveDamageModifier extends PokemonHeldItemModifier {
 }
 
 export class BypassSpeedChanceModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -1440,6 +1455,8 @@ export class BypassSpeedChanceModifier extends PokemonHeldItemModifier {
 }
 
 export class FlinchChanceModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -1474,6 +1491,8 @@ export class FlinchChanceModifier extends PokemonHeldItemModifier {
 }
 
 export class TurnHealModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -1511,6 +1530,8 @@ export class TurnHealModifier extends PokemonHeldItemModifier {
  * @see {@linkcode apply}
  */
 export class TurnStatusEffectModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   /** The status effect to be applied by the held item */
   private effect: StatusEffect;
 
@@ -1565,6 +1586,8 @@ export class TurnStatusEffectModifier extends PokemonHeldItemModifier {
 }
 
 export class HitHealModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -1623,6 +1646,8 @@ export class LevelIncrementBoosterModifier extends PersistentModifier {
 }
 
 export class BerryModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   public berryType: BerryType;
   public consumed: boolean;
 
@@ -1672,6 +1697,8 @@ export class BerryModifier extends PokemonHeldItemModifier {
 }
 
 export class PreserveBerryModifier extends PersistentModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, stackCount?: integer) {
     super(type, stackCount);
   }
@@ -1702,6 +1729,8 @@ export class PreserveBerryModifier extends PersistentModifier {
 }
 
 export class PokemonInstantReviveModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -1736,6 +1765,8 @@ export class PokemonInstantReviveModifier extends PokemonHeldItemModifier {
  * @see {@linkcode apply}
  */
 export class ResetNegativeStatStageModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -2062,6 +2093,8 @@ export class MultipleParticipantExpBonusModifier extends PersistentModifier {
 }
 
 export class HealingBoosterModifier extends PersistentModifier {
+  public isNegatable: boolean = true;
+
   private multiplier: number;
 
   constructor(type: ModifierType, multiplier: number, stackCount?: integer) {
@@ -2239,6 +2272,8 @@ export class PokemonFriendshipBoosterModifier extends PokemonHeldItemModifier {
 }
 
 export class PokemonNatureWeightModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierTypes.ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -2267,6 +2302,8 @@ export class PokemonNatureWeightModifier extends PokemonHeldItemModifier {
 }
 
 export class PokemonMoveAccuracyBoosterModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   private accuracyAmount: integer;
 
   constructor(type: ModifierTypes.PokemonMoveAccuracyBoosterModifierType, pokemonId: integer, accuracy: integer, stackCount?: integer) {
@@ -2307,6 +2344,8 @@ export class PokemonMoveAccuracyBoosterModifier extends PokemonHeldItemModifier 
 }
 
 export class PokemonMultiHitModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierTypes.PokemonMultiHitModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -2445,6 +2484,8 @@ export class MoneyMultiplierModifier extends PersistentModifier {
 }
 
 export class DamageMoneyRewardModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -2622,6 +2663,8 @@ export class BoostBugSpawnModifier extends PersistentModifier {
 }
 
 export class SwitchEffectTransferModifier extends PokemonHeldItemModifier {
+  public isNegatable: boolean = true;
+
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
   }
@@ -2736,6 +2779,8 @@ export abstract class HeldItemTransferModifier extends PokemonHeldItemModifier {
  * @see {@linkcode modifierTypes[MINI_BLACK_HOLE]}
  */
 export class TurnHeldItemTransferModifier extends HeldItemTransferModifier {
+  public isNegatable: boolean = true;
+
   isTransferable: boolean = true;
   constructor(type: ModifierType, pokemonId: integer, stackCount?: integer) {
     super(type, pokemonId, stackCount);
@@ -2773,6 +2818,8 @@ export class TurnHeldItemTransferModifier extends HeldItemTransferModifier {
  * @see {@linkcode HeldItemTransferModifier}
  */
 export class ContactHeldItemTransferChanceModifier extends HeldItemTransferModifier {
+  public isNegatable: boolean = true;
+
   private chance: number;
 
   constructor(type: ModifierType, pokemonId: integer, chancePercent: number, stackCount?: integer) {

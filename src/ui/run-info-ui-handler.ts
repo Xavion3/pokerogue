@@ -175,7 +175,13 @@ export default class RunInfoUiHandler extends UiHandler {
       if (gamepadType === "touch") {
         abilityButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 2, "keyboard", "E.png");
       } else {
-        abilityButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 2, gamepadType, globalScene.inputController?.getIconForLatestInputRecorded(SettingKeyboard.Button_Cycle_Ability));
+        const iconPath = globalScene.inputController?.getIconForLatestInputRecorded(SettingKeyboard.Button_Cycle_Ability);
+        if (Utils.isNullOrUndefined(iconPath)) { // Happens when both a keybind and its alt keybind aren't set
+          abilityButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 2, "icon_stop");
+          abilityButtonElement.setScale(0.7);
+        } else {
+          abilityButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 2, gamepadType, iconPath);
+        }
       }
       abilityButtonContainer.add([ abilityButtonText, abilityButtonElement ]);
       abilityButtonContainer.setPosition(headerBgCoords.x - abilityButtonText.displayWidth - abilityButtonElement.displayWidth - 8, 10);
@@ -213,8 +219,20 @@ export default class RunInfoUiHandler extends UiHandler {
         shinyButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 4, "keyboard", "R.png");
         formButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 16, "keyboard", "F.png");
       } else {
-        shinyButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 4, gamepadType, globalScene.inputController?.getIconForLatestInputRecorded(SettingKeyboard.Button_Cycle_Shiny));
-        formButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 16, gamepadType, globalScene.inputController?.getIconForLatestInputRecorded(SettingKeyboard.Button_Cycle_Form));
+        const shinyIconPath = globalScene.inputController?.getIconForLatestInputRecorded(SettingKeyboard.Button_Cycle_Shiny);
+        if (Utils.isNullOrUndefined(shinyIconPath)) { // Happens when both a keybind and its alt keybind aren't set
+          shinyButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 2, "icon_stop");
+          shinyButtonElement.setScale(0.7);
+        } else {
+          shinyButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 4, gamepadType, shinyIconPath);
+        }
+        const formIconPath = globalScene.inputController?.getIconForLatestInputRecorded(SettingKeyboard.Button_Cycle_Form);
+        if (Utils.isNullOrUndefined(formIconPath)) { // Happens when both a keybind and its alt keybind aren't set
+          formButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 2, "icon_stop");
+          formButtonElement.setScale(0.7);
+        } else {
+          formButtonElement = new Phaser.GameObjects.Sprite(globalScene, 0, 16, gamepadType, formIconPath);
+        }
       }
       hallofFameInstructionContainer.add([ shinyButtonText, shinyButtonElement ]);
 

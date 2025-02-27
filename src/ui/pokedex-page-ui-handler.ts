@@ -1852,7 +1852,13 @@ export default class PokedexPageUiHandler extends MessageUiHandler {
     } else {
       iconPath = globalScene.inputController?.getIconForLatestInputRecorded(iconSetting);
     }
-    iconElement.setTexture(gamepadType, iconPath);
+    if (Utils.isNullOrUndefined(iconPath)) { // Happens when both a keybind and its alt keybind aren't set
+      iconElement.setTexture("icon_stop");
+      iconElement.setScale(0.475);
+    } else {
+      iconElement.setTexture(gamepadType, iconPath);
+      iconElement.setScale(0.675);
+    }
     iconElement.setPosition(this.instructionRowX, this.instructionRowY);
     controlLabel.setPosition(this.instructionRowX + this.instructionRowTextOffset, this.instructionRowY);
     iconElement.setVisible(true);

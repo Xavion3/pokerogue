@@ -2402,7 +2402,7 @@ export default class StarterSelectUiHandler extends MessageUiHandler {
     }
   }
 
-  updateButtonIcon(iconSetting, gamepadType, iconElement, controlLabel): void {
+  updateButtonIcon(iconSetting: SettingKeyboard, gamepadType: string, iconElement: Phaser.GameObjects.Sprite, controlLabel: Phaser.GameObjects.Text): void {
     let iconPath;
     // touch controls cannot be rebound as is, and are just emulating a keyboard event.
     // Additionally, since keyboard controls can be rebound (and will be displayed when they are), we need to have special handling for the touch controls
@@ -2436,7 +2436,13 @@ export default class StarterSelectUiHandler extends MessageUiHandler {
     } else {
       iconPath = globalScene.inputController?.getIconForLatestInputRecorded(iconSetting);
     }
-    iconElement.setTexture(gamepadType, iconPath);
+    if (Utils.isNullOrUndefined(iconPath)) { // Happens when both a keybind and its alt keybind aren't set
+      iconElement.setTexture("icon_stop");
+      iconElement.setScale(0.475);
+    } else {
+      iconElement.setTexture(gamepadType, iconPath);
+      iconElement.setScale(0.675);
+    }
     iconElement.setPosition(this.instructionRowX, this.instructionRowY);
     controlLabel.setPosition(this.instructionRowX + this.instructionRowTextOffset, this.instructionRowY);
     iconElement.setVisible(true);

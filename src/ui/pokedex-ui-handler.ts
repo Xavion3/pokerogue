@@ -40,6 +40,7 @@ import { speciesTmMoves } from "#app/data/balance/tms";
 import { pokemonStarters } from "#app/data/balance/pokemon-evolutions";
 import { Biome } from "#enums/biome";
 import { globalScene } from "#app/global-scene";
+import * as Utils from "#app/utils";
 
 interface LanguageSetting {
   starterInfoTextSize: string,
@@ -1190,7 +1191,13 @@ export default class PokedexUiHandler extends MessageUiHandler {
     } else {
       iconPath = globalScene.inputController?.getIconForLatestInputRecorded(iconSetting);
     }
-    iconElement.setTexture(gamepadType, iconPath);
+    if (Utils.isNullOrUndefined(iconPath)) { // Happens when both a keybind and its alt keybind aren't set
+      iconElement.setTexture("icon_stop");
+      iconElement.setScale(0.475);
+    } else {
+      iconElement.setTexture(gamepadType, iconPath);
+      iconElement.setScale(0.675);
+    }
     iconElement.setVisible(true);
     controlLabel.setVisible(true);
   }
@@ -1205,7 +1212,13 @@ export default class PokedexUiHandler extends MessageUiHandler {
     } else {
       iconPath = globalScene.inputController?.getIconForLatestInputRecorded(iconSetting);
     }
-    iconElement.setTexture(gamepadType, iconPath);
+    if (Utils.isNullOrUndefined(iconPath)) { // Happens when both a keybind and its alt keybind aren't set
+      iconElement.setTexture("icon_stop");
+      iconElement.setScale(0.475);
+    } else {
+      iconElement.setTexture(gamepadType, iconPath);
+      iconElement.setScale(0.675);
+    }
     iconElement.setVisible(true);
     controlLabel.setVisible(true);
   }

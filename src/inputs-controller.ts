@@ -525,7 +525,12 @@ export class InputsController {
     return null;
   }
 
-  getIconForLatestInputRecorded(settingName) {
+  /**
+   * Returns the frame key for the correct icon for this keybind
+   * @param settingName The keybind to get the icon path for
+   * @returns The icon path if one exists for this keybind, undefined if no key is bound
+   */
+  getIconForLatestInputRecorded(settingName: string): string | undefined {
     if (this.lastSource === "keyboard") {
       this.ensureKeyboardIsInit();
     }
